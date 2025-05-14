@@ -1,19 +1,31 @@
 pipeline {
     agent any
-
     environment {
-        DEPLOYMENT_NAME = "hello-node"
-        CONTAINER_NAME = "docs"
-        IMAGE_NAME = "yourdockerid/teedy-custom:latest"
+        DEPLOYMENT_NAME = "your-deployment"
+        CONTAINER_NAME = "your-container"
+        IMAGE_NAME = "your-dockerhub-id/your-image:version"
     }
-
     stages {
-        stage('Set Image in K8s') {
+        stage('Start Minikube') {
             steps {
-                sh "kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=${IMAGE_NAME}"
+                sh '''
+                    if ! minikube status | grep -q "Running"; then
+                        echo "Starting Minikube..."
+                        minikube start
+                    else
+                        echo "Minikube already running."
+                    fi
+                '''
             }
         }
-
+        stage('Set Image') {
+            steps {
+                sh '''
+                    echo "Setting image for deployment..."
+                    kubectl set image deployment/${DEPLOYMENT_NAME} ${CONTAINER_NAME}=${IMAGE_N
+                '''
+            }
+        }
         stage('Verify') {
             steps {
                 sh 'kubectl rollout status deployment/${DEPLOYMENT_NAME}'
@@ -21,4 +33,4 @@ pipeline {
             }
         }
     }
-}
+ }
